@@ -89,22 +89,34 @@ void subMatrix(Triad *A, int sizeA, Triad *B, int sizeB) {
         printf("\n");
     }
 }
-// 乘法,乘法必须有三元组实现
+// 乘法,乘法必须由三元组实现,不然时间复杂度很大
 void multiMatrix(Triad *A, int sizeA, Triad *B, int sizeB) {}
 // 求逆,求逆如果用三元组来表示将会非常复杂,因此这里依然使用矩阵来计算
-void reverseMatrix(Triad *A, int sizeA) {}
+void reverseMatrix(Triad *A, int sizeA) {
+    MA = transMatrix(A,sizeA);
+
+}
 
 int main() {
     char calClass; // 计算的类型
     printf("你是否要求逆运算?,如果是请输入'r',否则请输入其它:\n");
     scanf("%c", &calClass);
     if (calClass == 'r') {
+        printf("请输入矩阵A的行数和列数:\n");
+        scanf("%d %d", &rowA, &colA);
+        // 判断是否可计算
+        if (rowA != rowB) {
+            printf("你输入的不是方阵,无法求逆,程序将结束!\n");
+            return 0;
+        } else if (rowA > MAXSIZE && colB > MAXSIZE) {
+            printf("你输入的矩阵太大,程序将结束!\n");
+            return 0;
+        }
         int sizeA = makeMatrix(A);
         reverseMatrix(A, sizeA);
         return 0;
     }
     // 输入列数和行数
-    // scanf("\n");
     printf("请输入矩阵A的行数和列数:\n");
     scanf("%d %d", &rowA, &colA);
     printf("请输入矩阵B的行数和列数:\n");
