@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAXSIZE 1024
 
 // 字符类型的种类
 int count = 0;
-int numOfLeafNodes = 0;
 // 结点结构
 typedef struct Node {
     char data;          // 字符
@@ -33,8 +33,8 @@ int getArray(char *fileName) {
         return -1;
     }
 
-    int byte;
-    while ((byte = fgetc(file)) != EOF) {
+    unsigned char byte;
+    while (fread(&byte, 1, 1, file) > 0) {
         // byte 变量中包含了读取的字节数据
         Array[byte]++;
     }
@@ -45,7 +45,6 @@ int getArray(char *fileName) {
             count++;
         }
     }
-    numOfLeafNodes = count;
     return count;
 }
 // Node 数组
@@ -60,6 +59,10 @@ void getPriorityQueue() {
             k++;
             priorityQueue[k] = createNode(i, Array[i]);
         }
+    }
+    printf("字节值---字节出现的频率\n");
+    for (int i = 0; i < 256; i++) {
+        printf("%d: %d\n", i, Array[i]);
     }
 }
 
@@ -77,7 +80,7 @@ void sortPriorityQueue() {
     }
     // 测试打印
     for (int i = 0; i < count; i++) {
-        printf("%c, %d\n", priorityQueue[i]->data, priorityQueue[i]->freq);
+        printf("%d: %d\n", priorityQueue[i]->data, priorityQueue[i]->freq);
     }
 }
 
@@ -166,7 +169,7 @@ void printHuffmanTree(Node *root) {
     if (root == NULL) {
         return;
     }
-    printf("%c - %d\n", root->data, root->freq);
+    printf("%d - %d\n", root->data, root->freq);
     printHuffmanTree(root->left);
     printHuffmanTree(root->right);
 }
@@ -255,82 +258,102 @@ int targetFile(LeafNodeCode *leafNodeCodes, char *fileSourceName,
     return 0;
 }
 // 根据前缀码获取字符
-char searchPrecode(char *preCode, LeafNodeCode *LeafNodeCodes) {
+char *searchPrecode(char *preCode, LeafNodeCode *LeafNodeCodes) {
     for (int i = 0; i < count; i++) {
         if (strcmp(preCode, LeafNodeCodes[i].code) == 0) {
-            return LeafNodeCodes[i].data;
+            return &LeafNodeCodes[i].data;
         }
     }
-    return 0;
+    return NULL;
 }
 // 解密
 void deCode(char *codeFileName, char *decodeFileName,
             LeafNodeCode *LeafNodeCodes) {
     // 打开加密文件
     FILE *inFile = fopen(codeFileName, "rb");
-    FILE *outFile = fopen(decodeFileName, "w");
+    FILE *outFile = fopen(decodeFileName, "wb");
     if (inFile == NULL || outFile == NULL) {
         // 打开失败
         perror("File open error");
         return;
     }
-    // 存放临时准前缀码
-    char preCode[20];
+    // 存放临时 准前缀码
+    char preCode[257];
     int byte;
     int tag = -1;
+    char value;
     while (1) {
-        memset(preCode, 0, 20);
-        int i = 0;
-        char value;
-        while (!searchPrecode(preCode, LeafNodeCodes)) {
+        memset(preCode, '\0', 257);
+        int i = -1;
+        while ((searchPrecode(preCode, LeafNodeCodes)) == NULL) {
             byte = fgetc(inFile);
-            if (byte == EOF){
+            if (byte == EOF) {
                 tag = 0;
                 break;
             }
-            preCode[i++] = byte;
-            printf("准前缀码:%s\n",preCode);
+            preCode[++i] = byte;
+            printf("准前缀码:%s\n", preCode);
         }
-        value = searchPrecode(preCode, LeafNodeCodes);
-        // 将这个解密的数据写入文件
-        if(tag == 0){
+        if (tag == 0) {
             break;
         }
-        fprintf(outFile, "%c", value);
+        value = *searchPrecode(preCode, LeafNodeCodes);
+        printf("%c\n", value);
+        // 将这个解密的数据写入文件
+
+        if (fwrite(&value, 1, 1, outFile) <= 0) {
+            printf("写入失败!\n");
+        }
     }
     fclose(inFile);
     fclose(outFile);
 }
 
 int main(int argc, char *argv[]) {
+
+    // bus error?
+    // char argv1[MAXSIZE] = {0};
+    // char argv2[MAXSIZE] = {0};
+    // char argv3[MAXSIZE] = {0};
+    // strcpy(argv1,argv[1]);
+    // strcpy(argv2,argv[2]);
+    // strcpy(argv3,argv[3]);
+    if (argc < 4) {
+        printf("use method: "
+               "命令_被压缩文件_存放哈夫曼编码后的文本文件名_解码后的文件名\n");
+        return -1;
+    }
+
     if (getArray(argv[1]) == -1) {
         printf("文件不存在,打开失败!\n");
-        return 0;
-    } else {
-        /**************对字节频率构建哈夫曼树***************/
-        // 拿到队列
-        getPriorityQueue();
-        // 排序
-        sortPriorityQueue();
-        // 构建哈夫曼树
-        Node *root = buildHuffmanTree(priorityQueue, count);
-        // // 打印哈夫曼树
-        // printHuffmanTree(root);
-        // 获取每个叶子节点的哈夫曼编码
-        LeafNodeCode *leafNodeCodes = getLeafNodeCodes(root);
-        // 输出每个叶子节点的字符和编码
-        for (int i = 0; i < count; i++) {
-            printf("Character: %c, Huffman Code: %s\n", leafNodeCodes[i].data,
-                   leafNodeCodes[i].code);
-        }
-        // 构建压缩文件
-        if (targetFile(leafNodeCodes, argv[1], argv[2]) == -1) {
-            printf("压缩出错!\n");
-            return -1;
-        }
-        // 解密
-        deCode(argv[2], argv[3], leafNodeCodes);
-        free(leafNodeCodes);
+        return -1;
     }
+    /**************对字节频率构建哈夫曼树***************/
+    // 拿到队列
+    getPriorityQueue();
+    // 排序
+    sortPriorityQueue();
+    // 构建哈夫曼树
+    Node *root = buildHuffmanTree(priorityQueue, count);
+    // // 打印哈夫曼树
+    // printHuffmanTree(root);
+    // 获取每个叶子节点的哈夫曼编码
+    LeafNodeCode *leafNodeCodes = getLeafNodeCodes(root);
+
+    // 输出每个叶子节点的字符和编码
+    for (int i = 0; i < count; i++) {
+        printf("Character: %d, Huffman Code: %s\n", leafNodeCodes[i].data,
+               leafNodeCodes[i].code);
+    }
+    // 构建压缩文件
+    if (targetFile(leafNodeCodes, argv[1], argv[2]) == -1) {
+        printf("压缩出错!\n");
+        return -1;
+    }
+    // 解码
+    deCode(argv[2], argv[3], leafNodeCodes);
+
+    free(leafNodeCodes);
+    free(root);
     return 0;
 }

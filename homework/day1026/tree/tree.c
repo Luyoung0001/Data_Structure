@@ -141,6 +141,9 @@ int main() {
     // 统计叶子结点个数
     int num = countLeaves(root);
     printf("\n叶子结点有%d个\n", num);
+
+    // 统计树的高度
+
     // 三种递归遍历方式
     printf("\n先序递归遍历:\n");
     preorderTraversal(root);
