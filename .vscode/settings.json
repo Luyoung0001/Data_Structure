@@ -51,6 +51,7 @@
         "unordered_map": "c",
         "utility": "c",
         "__string": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "__config": "c"
     }
 }
