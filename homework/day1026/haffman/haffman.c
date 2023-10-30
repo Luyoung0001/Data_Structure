@@ -212,10 +212,6 @@ void generateLeafNodeCodes(Node *node, char *currentCode,
 int numLeafNodes;
 LeafNodeCode *getLeafNodeCodes(Node *root) {
     numLeafNodes = count;
-
-    // 计算叶子节点数目
-    // 在这里，你需要提前知道哈夫曼树的叶子节点数量
-
     // 分配 LeafNodeCode 数组
     LeafNodeCode *leafNodeCodes =
         (LeafNodeCode *)malloc(numLeafNodes * sizeof(LeafNodeCode));
@@ -292,13 +288,13 @@ void deCode(char *codeFileName, char *decodeFileName,
                 break;
             }
             preCode[++i] = byte;
-            printf("准前缀码:%s\n", preCode);
+            // printf("准前缀码:%s\n", preCode);
         }
         if (tag == 0) {
             break;
         }
         value = *searchPrecode(preCode, LeafNodeCodes);
-        printf("%c\n", value);
+        // printf("%c\n", value);
         // 将这个解密的数据写入文件
 
         if (fwrite(&value, 1, 1, outFile) <= 0) {
