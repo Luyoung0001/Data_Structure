@@ -52,6 +52,9 @@
         "utility": "c",
         "__string": "c",
         "cstring": "c",
-        "__config": "c"
+        "__config": "c",
+        "queue": "c",
+        "minheap.h": "c",
+        "stdio.h": "c"
     }
 }

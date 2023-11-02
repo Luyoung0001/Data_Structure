@@ -16,7 +16,7 @@ typedef struct {
     int size;
 } PriorityQueue;
 
-// 创建一个队列,这里在堆里分配一个内存区域
+// 创建一个队列,这里在堆区分配一个内存区域
 PriorityQueue *createPriorityQueue(int capacity) {
     PriorityQueue *queue = (PriorityQueue *)malloc(sizeof(PriorityQueue));
     queue->capacity = capacity;
@@ -34,6 +34,8 @@ void swap(QueueElement *a, QueueElement *b) {
 
 // 使得堆保持最小堆
 void heapify(PriorityQueue *queue, int index) {
+    // 这是利用数组存储一个堆
+    
     int smallest = index;
     int left = 2 * index + 1;
     int right = 2 * index + 2;
@@ -66,7 +68,7 @@ void enqueue(PriorityQueue *queue, int data, int priority) {
     queue->array[i].data = data;
     queue->array[i].priority = priority;
 
-    // 保持最小堆性质
+    // 保持最小堆性质,上滤法
     while (i > 0 &&
            queue->array[(i - 1) / 2].priority > queue->array[i].priority) {
         swap(&queue->array[i], &queue->array[(i - 1) / 2]);
@@ -89,6 +91,7 @@ QueueElement *dequeue(PriorityQueue *queue) {
     // 交换队列的第一个元素（最小优先级）和最后一个元素
     QueueElement *root = &queue->array[0];
     queue->array[0] = queue->array[queue->size - 1];
+    // 删除最后一个元素
     queue->size--;
 
     // 保持最小堆性质
