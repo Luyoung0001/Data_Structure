@@ -40,6 +40,7 @@ int getArray(char *fileName) {
     }
     // 关闭文件
     fclose(file);
+    // 统计
     for (int i = 0; i < 256; i++) {
         if (Array[i] != 0) {
             count++;

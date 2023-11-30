@@ -3,8 +3,8 @@
 
 // 定义节点
 typedef struct node {
-    int value;         // data
-    struct node *next; // where the next node is
+    int value;         
+    struct node *next;
 } Node, *LinkList;
 
 // 初始化链表,带一个头结点

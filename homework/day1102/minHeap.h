@@ -1,10 +1,9 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
+#include "haffTree.h"
 #include <stdio.h>
 #include <stdlib.h>
-// #include "tree.h"
-
-#define ElemType int
+// #define ElemType int
 // 定义一个堆
 typedef struct {
     ElemType *data;
@@ -30,9 +29,9 @@ void initHeap(minHeap *heap, int capacity) {
 void insert(minHeap *heap, int *size, ElemType value) {
     int i = *size;
     *size = *size + 1;
-    heap->data[i] = value;
+    heap->data[i] = value; // 这里可以通过浅拷贝达到目的的
     // 上浮
-    while (i > 0 && heap->data[(i - 1) / 2] > heap->data[i]) {
+    while (i > 0 && heap->data[(i - 1) / 2].fre > heap->data[i].fre) {
         swap(&heap->data[(i - 1) / 2], &heap->data[i]);
         i = (i - 1) / 2;
     }
@@ -48,7 +47,7 @@ ElemType *delete(minHeap *heap, int *size) {
     int i = *size;
     *size = *size - 1;
     // 拿到值
-    ElemType *minRet = (ElemType*)malloc(sizeof(ElemType));
+    ElemType *minRet = (ElemType *)malloc(sizeof(ElemType));
     *minRet = heap->data[0];
     // 用最后一个元素替代第一个
     heap->data[0] = heap->data[*size];
@@ -60,11 +59,11 @@ ElemType *delete(minHeap *heap, int *size) {
         int right = 2 * k + 2;
         int smallest = k;
 
-        if (heap->data[left] < heap->data[smallest]) {
+        if (heap->data[left].fre < heap->data[smallest].fre) {
             k = left;
         }
 
-        if (heap->data[right] < heap->data[smallest]) {
+        if (heap->data[right].fre < heap->data[smallest].fre) {
             k = right;
         }
         // 如果 smallest 被更新,就交换
