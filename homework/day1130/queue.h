@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "net.h"
 
-#define ELEMTYPE HeadNode*
+#define ELEMTYPE int
 // 定义队列结构
 #define MAX_SIZE 100
 
@@ -20,22 +20,22 @@ void initQueue(Queue* queue) {
 }
 
 // 检查队列是否为空
-int isEmpty(Queue* queue) {
+int isQEmpty(Queue* queue) {
     return (queue->front == -1 && queue->rear == -1);
 }
 
 // 检查队列是否已满
-int isFull(Queue* queue) {
+int isQFull(Queue* queue) {
     return (queue->rear == MAX_SIZE - 1);
 }
 
 // 入队操作
-void enqueue(Queue* queue, ELEMTYPE value) {
-    if (isFull(queue)) {
+void enqueue(Queue* queue, int value) {
+    if (isQFull(queue)) {
         printf("Queue is full. Cannot enqueue.\n");
         return;
     }
-    if (isEmpty(queue)) {
+    if (isQEmpty(queue)) {
         queue->front = queue->rear = 0;
     } else {
         queue->rear++;
@@ -45,9 +45,9 @@ void enqueue(Queue* queue, ELEMTYPE value) {
 
 // 出队操作
 ELEMTYPE dequeue(Queue* queue) {
-    if (isEmpty(queue)) {
+    if (isQEmpty(queue)) {
         printf("Queue is empty. Cannot dequeue.\n");
-        return NULL;
+        return -1;
     }
     ELEMTYPE value = queue->items[queue->front];
     if (queue->front == queue->rear) {

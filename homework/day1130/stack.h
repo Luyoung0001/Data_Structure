@@ -6,7 +6,7 @@
 
 // 定义栈结构
 #define MAX_SIZE 100
-#define ELEMTYPE HeadNode*
+#define ELEMTYPE int
 
 typedef struct {
     ELEMTYPE items[MAX_SIZE];
@@ -19,18 +19,18 @@ void initStack(Stack* stack) {
 }
 
 // 检查栈是否为空
-int isEmpty(Stack* stack) {
+int isSEmpty(Stack* stack) {
     return (stack->top == -1);
 }
 
 // 检查栈是否已满
-int isFull(Stack* stack) {
+int isSFull(Stack* stack) {
     return (stack->top == MAX_SIZE - 1);
 }
 
 // 入栈操作
 void push(Stack* stack, ELEMTYPE value) {
-    if (isFull(stack)) {
+    if (isSFull(stack)) {
         printf("Stack is full. Cannot push.\n");
         return;
     }
@@ -40,9 +40,9 @@ void push(Stack* stack, ELEMTYPE value) {
 
 // 出栈操作
 ELEMTYPE pop(Stack* stack) {
-    if (isEmpty(stack)) {
+    if (isSEmpty(stack)) {
         printf("Stack is empty. Cannot pop.\n");
-        return NULL; // 返回一个特殊值表示出错
+        return -1; // 返回一个特殊值表示出错
     }
     ELEMTYPE value = stack->items[stack->top];
     stack->top--;
@@ -51,9 +51,9 @@ ELEMTYPE pop(Stack* stack) {
 
 // 获取栈顶元素
 ELEMTYPE top(Stack* stack) {
-    if (isEmpty(stack)) {
+    if (isSEmpty(stack)) {
         printf("Stack is empty. Cannot get top element.\n");
-        return NULL; // 返回一个特殊值表示出错
+        return -1; // 返回一个特殊值表示出错
     }
     return stack->items[stack->top];
 }

@@ -1,18 +1,111 @@
-#include "net.h"
 #include <stdio.h>
+#include "net.h"
+// #include "queue.h"
+// #include "stack.h"
+// 栈和队列
+#define MAX_QUEUE_SIZE 100
+
+typedef struct {
+    int items[MAX_QUEUE_SIZE];
+    int front, rear;
+} Queue;
+
+void initQueue(Queue *queue) {
+    queue->front = -1;
+    queue->rear = -1;
+}
+
+int isQEmpty(Queue *queue) {
+    return (queue->front == -1 && queue->rear == -1);
+}
+
+void enqueue(Queue *queue, int value) {
+    if ((queue->rear + 1) % MAX_QUEUE_SIZE == queue->front) {
+        printf("Queue is full.\n");
+        return;
+    } else if (isQEmpty(queue)) {
+        queue->front = 0;
+        queue->rear = 0;
+    } else {
+        queue->rear = (queue->rear + 1) % MAX_QUEUE_SIZE;
+    }
+    queue->items[queue->rear] = value;
+}
+
+int dequeue(Queue *queue) {
+    int value;
+
+    if (isQEmpty(queue)) {
+        printf("Queue is empty.\n");
+        return -1;
+    } else if (queue->front == queue->rear) {
+        value = queue->items[queue->front];
+        queue->front = -1;
+        queue->rear = -1;
+    } else {
+        value = queue->items[queue->front];
+        queue->front = (queue->front + 1) % MAX_QUEUE_SIZE;
+    }
+
+    return value;
+}
+//--------------------------------------------------------------------//
+#define MAX_STACK_SIZE 100
+
+typedef struct {
+    int items[MAX_STACK_SIZE];
+    int top;
+} Stack;
+
+void initStack(Stack *stack) {
+    stack->top = -1;
+}
+
+int isSEmpty(Stack *stack) {
+    return (stack->top == -1);
+}
+
+int isFull(Stack *stack) {
+    return (stack->top == MAX_STACK_SIZE - 1);
+}
+
+void push(Stack *stack, int value) {
+    if (isFull(stack)) {
+        printf("Stack overflow.\n");
+        return;
+    }
+    stack->items[++(stack->top)] = value;
+}
+
+int pop(Stack *stack) {
+    if (isSEmpty(stack)) {
+        printf("Stack underflow.\n");
+        return -1;
+    }
+    return stack->items[(stack->top)--];
+}
+
+int peek(Stack *stack) {
+    if (isSEmpty(stack)) {
+        printf("Stack is empty.\n");
+        return -1;
+    }
+    return stack->items[stack->top];
+}
+
 #define VERTICE_SIZE 5
-HeadNode Graph[VERTICE_SIZE] = {0};
+HeadNode Graph[VERTICE_SIZE+1] = {0};
 // 图初始化 添加图的值
 void graphInit() {
     printf("请输入结点信息:\n");
-    for (int i = 0; i < VERTICE_SIZE; i++) {
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
         scanf(" %c", &Graph[i].value);
     }
 }
 // 图创建 添加图的拓扑信息(这个函数不专一,干的事情有点多了...)
 void graphFinish() {
     printf("请输入结点拓扑信息:\n");
-    for (int i = 0; i < VERTICE_SIZE; i++) {
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
         // 建立链表,尾插法(带头结点)并初始化
         Node *head = malloc(sizeof(Node));
         head->index = 0;
@@ -57,7 +150,7 @@ void traverseList(Node *list) {
 
 // 验证打印,查看邻接表建立情况
 void printGraph() {
-    for (int i = 0; i < VERTICE_SIZE; i++) {
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
         // 打印节点
         printf("%c: ", Graph[i].value);
         // 打印后面的值
@@ -65,59 +158,101 @@ void printGraph() {
         printf("\n");
     }
 }
-// 根据一个结点找出它的索引
-int findIndex(HeadNode *headnode){
-    for(int i = 0; i < VERTICE_SIZE; i++){
-        if(Graph[i].value == headnode->value){
-            return i;
-        }
-    }
-}
-// 遍历数组
-int visited[VERTICE_SIZE] = {0};
-// 根据索引,来标记它已经被访问过
-void visit(int index){
-    visited[findIndex(index)] = 1;
-}
 
 // 遍历图: 从哪一个结点开始遍历
 // bfs
-void bfs(char s_vertex){
-    // 找到访问索引
-    int startIndex = findIndex(s_vertex);
-    // 根据索引进行 bfs
-    // ...
+// Breadth-First Search (BFS) using adjacency list
+void bfs(int start) {
+    int visited[VERTICE_SIZE+1] = {0};
+    Queue queue;
+    initQueue(&queue);
 
+    printf("%c ", Graph[start].value);
+    visited[start] = 1;
+    enqueue(&queue, start);
+
+    while (!isQEmpty(&queue)) {
+        int current = dequeue(&queue);
+        Node *temp = Graph[current].listHead;
+        while (temp != NULL) {
+            int index = temp->index;
+            if (!visited[index]) {
+                printf("%c ", Graph[index].value);
+                visited[index] = 1;
+                enqueue(&queue, index);
+            }
+            temp = temp->next;
+        }
+    }
 }
+
 
 // dfs
-void dfs(char s_vertex){
-    // 找到访问索引
-    int startIndex = findIndex(s_vertex);
-    // 根据索引进行 dfs
-    // ...
+// Depth-First Search (DFS) using adjacency list
+void dfs(int start) {
+    static int visited[VERTICE_SIZE] = {0};
+    printf("%c ", Graph[start].value);
+    visited[start] = 1;
 
+    Node *current = Graph[start].listHead;
+    while (current != NULL) {
+        int index = current->index;
+        if (!visited[index]) {
+            dfs(index);
+        }
+        current = current->next;
+    }
 }
-// 结点的下一个邻接结点
-// int nextIndexOfVertex(char vertex) {}
 
+// 计算入度和出度
+void calculateDegrees(HeadNode Graph[], int inDegree[], int outDegree[]) {
+    // 初始化入度和出度数组
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
+        inDegree[i] = 0;
+        outDegree[i] = 0;
+    }
 
+    // 遍历每个结点
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
+        Node *current = Graph[i].listHead;
 
+        // 计算出度
+        while (current != NULL) {
+            outDegree[i]++;
+            current = current->next;
+        }
 
-
-
-
-
-
-
-
-
-
-
-
+        // 计算入度
+        for (int j = 1; j <= VERTICE_SIZE; j++) {
+            current = Graph[j].listHead;
+            while (current != NULL) {
+                if (current->index == i) {
+                    inDegree[i]++;
+                    break;
+                }
+                current = current->next;
+            }
+        }
+    }
+}
 int main() {
     graphInit();
     graphFinish();
     printGraph();
+    printf("dfs:\n");
+
+    dfs(1);
+    printf("\nbfs:\n");
+    bfs(1);
+    // 初始化入度和出度数组
+    int inDegree[VERTICE_SIZE+1], outDegree[VERTICE_SIZE+1];
+    calculateDegrees(Graph, inDegree, outDegree);
+
+    // 打印入度和出度
+    printf("\n节点   入度   出度   度\n");
+    for (int i = 1; i <= VERTICE_SIZE; i++) {
+        printf("%c      %d      %d      %d\n", Graph[i].value, inDegree[i], outDegree[i],inDegree[i]+outDegree[i]);
+    }
+    // free 堆区
     return 0;
 }
