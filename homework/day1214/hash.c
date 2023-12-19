@@ -1,4 +1,5 @@
 #include <ctype.h> // toascii(): 把一个字符转换为ASCII
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,9 +7,9 @@
 #define NAME_LEN 31
 #define P 31
 
-int len = 0;
+uint32_t len = 0;
 
-char *map[NAME_LEN] = {0};
+char *map[NAME_LEN];
 const char *names[NAME_LEN] = {
     "侯晨阳", "唐甲超", "滕悦",   "马晰",   "徐楠",   "南佳怡", "薛宇涵",
     "杜龙飞", "祝贺琴", "张浩",   "赵晓春", "路亮",   "王晨",   "许宇泉",
@@ -64,14 +65,16 @@ void HashMap() {
     for (int i = 0; i < NAME_LEN; i++) {
         uint32_t pos = HASH(names[i]);
         if (map[pos] == NULL) {
-            map[pos] = names[i];
+            map[pos] = (char *)names[i];
         } else {
             // 随机再散列
             randPos = rand() % 31;
-            while (map[randPos] != NULL) {
+            pos = (pos + randPos) % P;
+            while (map[pos] != NULL) {
                 randPos = rand() % 31;
+                pos = (pos + randPos) % P;
             }
-            map[randPos] = names[i];
+            map[pos] = (char *)names[i];
         }
     }
 }
@@ -80,31 +83,32 @@ void HashMap() {
 uint32_t search(const char *name) {
     len = 0;
     int randPos;
-    int pos = HASH(name);
-    if (strcmp(names[pos], names) == 0) {
+    uint32_t pos = HASH(name);
+
+    if (strcmp(name,map[pos]) == 0) {
+        len = 1;
         return pos;
     } else {
         // 随机再散列
         len = 1;
         randPos = rand() % 31;
-        while (strcmp(names[randPos], name) != 0) {
+        pos = (pos + randPos) % P;
+        while (strcmp(name,map[pos]) != 0) {
             len++;
             randPos = rand() % 31;
+            pos = (pos + randPos) % P;
         }
-        // printf("本次查找长度:%d \n",len);
     }
-    return randPos;
+    return pos;
 }
 // 打印
-void print3(){
-    for(int i = 0; i < NAME_LEN; i++){
-        printf("%d  %s\n",search(names[i]),names[i]);
+void print3() {
+    for (int i = 0; i < NAME_LEN; i++) {
+        search(names[i]);
+        printf("本次查找次数为:%d   %d  %d  %s\n", len, i, search(names[i]),
+               names[i]);
     }
 }
-
-
-
-
 
 // 平均查找长度
 double averlen() {
@@ -113,14 +117,19 @@ double averlen() {
         search(names[i]);
         tal += len;
     }
-    return (double)(tal/NAME_LEN);
+    return (double)(tal / NAME_LEN);
 }
 
 int main() {
+    // 初始化
+    for (int i = 0; i < NAME_LEN; i++) {
+        map[i] = NULL;
+    }
     HashMap();
     print3();
     int pos = search("孙尚香");
     printf("%d\n", pos);
+    printf("次数:%d\n", len);
     printf("%.5f\n", averlen());
 
     return 0;
